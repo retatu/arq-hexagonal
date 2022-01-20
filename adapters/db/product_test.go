@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/retatu/arq-hexagonal/adapters/db"
+	"github.com/retatu/arq-hexagonal/application"
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,4 +46,27 @@ func TestProductDb_Get(t *testing.T) {
 	require.Equal(t, 0.0, product.GetPrice())
 	require.Equal(t, "Teste", product.GetName())
 	require.Equal(t, "disabled", product.GetStatus())
+}
+
+func TestProductDb_Save(t *testing.T) {
+	setup()
+	defer DB.Close()
+
+	productDB := db.NewProductDB(DB)
+	product := application.NewProduct()
+	product.Name = "Teste"
+	product.Price = 12.3
+
+	productResult, err := productDB.Save(product)
+	require.Nil(t, err)
+	require.Equal(t, productResult.GetPrice(), product.GetPrice())
+	require.Equal(t, productResult.GetName(), product.GetName())
+	require.Equal(t, productResult.GetStatus(), product.GetStatus())
+
+	product.Status = "Enabled"
+	productResult, err = productDB.Save(product)
+	require.Nil(t, err)
+	require.Equal(t, productResult.GetPrice(), product.GetPrice())
+	require.Equal(t, productResult.GetName(), product.GetName())
+	require.Equal(t, productResult.GetStatus(), product.GetStatus())
 }
